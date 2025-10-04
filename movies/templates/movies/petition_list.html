@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>Movie Petitions</h2>
+        <hr />
+        <p class="text-muted">Vote on movies you'd like to see added to our store. Create petitions for movies you want to see!</p>
+      </div>
+    </div>
+
+    <!-- Create New Petition Form -->
+    <div class="row mb-4">
+      <div class="col-md-8 mx-auto">
+        <div class="card shadow p-3 mb-4 rounded">
+          <div class="card-body">
+            <h4 class="card-title">Create New Petition</h4>
+            <hr />
+            {% if template_data.error %}
+            <div class="alert alert-danger" role="alert">
+              {{ template_data.error }}
+            </div>
+            {% endif %}
+            <form method="POST">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="title" class="form-label">Movie Title</label>
+                <input type="text" class="form-control" id="title" name="title" required 
+                       placeholder="Enter the movie title">
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Why should this movie be added?</label>
+                <textarea class="form-control" id="description" name="description" rows="4" required 
+                          placeholder="Explain why this movie should be added to our store"></textarea>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn bg-dark text-white">Create Petition</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Petitions List -->
+    <div class="row">
+      <div class="col mx-auto">
+        <h4>All Petitions</h4>
+        <hr />
+        {% if template_data.petitions %}
+          <div class="row">
+            {% for petition in template_data.petitions %}
+            <div class="col-md-6 col-lg-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">{{ petition.title }}</h5>
+                  <p class="card-text">{{ petition.description|truncatewords:15 }}</p>
+                  <small class="text-muted">
+                    <i class="fas fa-user me-1"></i>
+                    Created by {{ petition.created_by.username }}
+                    <br>
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    {{ petition.created_date|date:"M d, Y" }}
+                  </small>
+                </div>
+                <div class="card-footer bg-transparent">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group" role="group">
+                      <form method="POST" action="{% url 'movies.vote_petition' petition_id=petition.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="vote_type" value="upvote">
+                        <button type="submit" class="btn btn-success btn-sm">
+                          <i class="fas fa-thumbs-up me-1"></i>Upvote
+                        </button>
+                      </form>
+                      <form method="POST" action="{% url 'movies.vote_petition' petition_id=petition.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="vote_type" value="downvote">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                          <i class="fas fa-thumbs-down me-1"></i>Downvote
+                        </button>
+                      </form>
+                    </div>
+                    <span class="badge bg-primary">{{ petition.get_vote_count }} votes</span>
+                  </div>
+                  {% if user == petition.created_by %}
+                  <div class="mt-2">
+                    <a href="{% url 'movies.delete_petition' petition_id=petition.id %}" 
+                       class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Are you sure you want to delete this petition?')">
+                      <i class="fas fa-trash me-1"></i>Delete
+                    </a>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-vote-yea fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No petitions yet</h5>
+            <p class="text-muted">Be the first to create a petition for a movie!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>Movie Requests</h2>
+        <hr />
+        <p class="text-muted">Request movies to be added to our store. You can view and manage your requests below.</p>
+      </div>
+    </div>
+
+    <!-- New Movie Request Form -->
+    <div class="row mb-4">
+      <div class="col-md-8 mx-auto">
+        <div class="card shadow p-3 mb-4 rounded">
+          <div class="card-body">
+            <h4 class="card-title">Request a New Movie</h4>
+            <hr />
+            {% if template_data.error %}
+            <div class="alert alert-danger" role="alert">
+              {{ template_data.error }}
+            </div>
+            {% endif %}
+            <form method="POST">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="name" class="form-label">Movie Name</label>
+                <input type="text" class="form-control" id="name" name="name" required 
+                       placeholder="Enter the movie title">
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Movie Description</label>
+                <textarea class="form-control" id="description" name="description" rows="4" required 
+                          placeholder="Describe the movie, its plot, genre, or why you'd like to see it in our store"></textarea>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn bg-dark text-white">Submit Request</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User's Movie Requests -->
+    <div class="row">
+      <div class="col mx-auto">
+        <h4>Your Movie Requests</h4>
+        <hr />
+        {% if template_data.user_requests %}
+          <div class="row">
+            {% for request in template_data.user_requests %}
+            <div class="col-md-6 col-lg-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">{{ request.name }}</h5>
+                  <p class="card-text">{{ request.description|truncatewords:20 }}</p>
+                  <small class="text-muted">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    Requested on {{ request.date|date:"M d, Y" }}
+                  </small>
+                </div>
+                <div class="card-footer bg-transparent">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-secondary">Request #{{ request.id }}</span>
+                    <a href="{% url 'movies.delete_movie_request' request_id=request.id %}" 
+                       class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Are you sure you want to delete this movie request?')">
+                      <i class="fas fa-trash me-1"></i>Delete
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-film fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No movie requests yet</h5>
+            <p class="text-muted">Use the form above to request your first movie!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
